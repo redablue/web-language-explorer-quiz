@@ -29,13 +29,14 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <Navigate to="/auth" replace />;
   }
 
-  // If user exists but no profile, show loading (profile is being created)
+  // If user exists but no profile, show a different loading message
   if (user && !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Configuration du profil...</p>
+          <p className="text-sm text-muted-foreground mt-2">Cela peut prendre quelques secondes</p>
         </div>
       </div>
     );

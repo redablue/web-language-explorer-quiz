@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profileFetched, setProfileFetched] = useState(false);
   const { toast } = useToast();
 
   const createMissingProfile = async (userId: string, email: string) => {
@@ -64,8 +63,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const fetchProfile = async (userId: string, email: string) => {
-    if (profileFetched) return;
-    
     try {
       console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
@@ -75,90 +72,89 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
 
       if (error) {
-        console.log('Profile not found, creating new profile...');
-        const newProfile = await createMissingProfile(userId, email);
-        if (newProfile) {
-          setProfile(newProfile);
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating new profile...');
+          const newProfile = await createMissingProfile(userId, email);
+          return newProfile;
         } else {
-          setProfile(null);
+          console.error('Error fetching profile:', error);
+          return null;
         }
       } else {
         console.log('Profile found:', data);
-        setProfile(data);
+        return data;
       }
-      
-      setProfileFetched(true);
     } catch (error) {
       console.error('Error in fetchProfile:', error);
-      setProfile(null);
-      setProfileFetched(true);
+      return null;
     }
   };
 
   useEffect(() => {
     let mounted = true;
 
-    const setupAuth = async () => {
+    const initializeAuth = async () => {
       try {
         // Get initial session
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         
         if (mounted) {
+          console.log('Initial session:', !!initialSession?.user);
           setSession(initialSession);
           setUser(initialSession?.user ?? null);
           
           if (initialSession?.user) {
-            await fetchProfile(initialSession.user.id, initialSession.user.email || '');
+            const userProfile = await fetchProfile(initialSession.user.id, initialSession.user.email || '');
+            if (mounted) {
+              setProfile(userProfile);
+            }
           }
           
           setLoading(false);
         }
-
-        // Set up auth state listener
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            if (!mounted) return;
-            
-            console.log('Auth state changed:', event, session?.user?.email);
-            
-            setSession(session);
-            setUser(session?.user ?? null);
-            
-            if (session?.user && !profileFetched) {
-              setProfileFetched(false);
-              await fetchProfile(session.user.id, session.user.email || '');
-            } else if (!session?.user) {
-              setProfile(null);
-              setProfileFetched(false);
-            }
-            
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-              setLoading(false);
-            }
-          }
-        );
-
-        return () => {
-          subscription.unsubscribe();
-        };
       } catch (error) {
-        console.error('Error setting up auth:', error);
+        console.error('Error initializing auth:', error);
         if (mounted) {
           setLoading(false);
         }
       }
     };
 
-    setupAuth();
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+        
+        console.log('Auth state changed:', event, !!session?.user);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          const userProfile = await fetchProfile(session.user.id, session.user.email || '');
+          if (mounted) {
+            setProfile(userProfile);
+          }
+        } else {
+          setProfile(null);
+        }
+        
+        if (event === 'SIGNED_OUT') {
+          setLoading(false);
+        }
+      }
+    );
+
+    initializeAuth();
 
     return () => {
       mounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      setProfileFetched(false);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -220,7 +216,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setProfile(null);
     setSession(null);
-    setProfileFetched(false);
     toast({
       title: "Déconnexion",
       description: "À bientôt !",

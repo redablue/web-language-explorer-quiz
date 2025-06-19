@@ -226,7 +226,7 @@ export type Database = {
         Returns: boolean
       }
       is_manager_or_higher: {
-        Args: { _user_id: string }
+        Args: Record<PropertyKey, never> | { _user_id: string }
         Returns: boolean
       }
     }
