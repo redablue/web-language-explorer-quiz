@@ -44,7 +44,11 @@ export const usePumps = () => {
         throw error;
       }
 
-      return data || [];
+      // Cast the status to the correct type since Supabase returns string
+      return (data || []).map(pump => ({
+        ...pump,
+        status: pump.status as 'active' | 'inactive' | 'maintenance' | 'out_of_order'
+      }));
     },
   });
 };

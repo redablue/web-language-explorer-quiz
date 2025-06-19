@@ -101,15 +101,22 @@ export const useCreateSale = () => {
 
       // Mettre à jour le total distribué de la pompe si une pompe est sélectionnée
       if (saleData.pump_id) {
-        const { error: pumpError } = await supabase.rpc(
-          'increment_pump_total',
-          { 
-            pump_id: saleData.pump_id, 
-            quantity: saleData.quantity 
-          }
-        );
-        // Ignorer l'erreur si la fonction n'existe pas encore
-        console.log('Pump update result:', pumpError);
+        // Mise à jour manuelle du total dispensé
+        const { data: currentPump } = await supabase
+          .from('pumps')
+          .select('total_dispensed')
+          .eq('id', saleData.pump_id)
+          .single();
+
+        if (currentPump) {
+          await supabase
+            .from('pumps')
+            .update({ 
+              total_dispensed: currentPump.total_dispensed + saleData.quantity,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', saleData.pump_id);
+        }
       }
     },
     onSuccess: () => {
