@@ -9,16 +9,176 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      fuel_tanks: {
+        Row: {
+          capacity: number
+          created_at: string | null
+          current_level: number
+          fuel_type: Database["public"]["Enums"]["fuel_type"]
+          id: string
+          min_threshold: number
+          name: string
+          price_per_liter: number
+          updated_at: string | null
+        }
+        Insert: {
+          capacity: number
+          created_at?: string | null
+          current_level?: number
+          fuel_type: Database["public"]["Enums"]["fuel_type"]
+          id?: string
+          min_threshold?: number
+          name: string
+          price_per_liter: number
+          updated_at?: string | null
+        }
+        Update: {
+          capacity?: number
+          created_at?: string | null
+          current_level?: number
+          fuel_type?: Database["public"]["Enums"]["fuel_type"]
+          id?: string
+          min_threshold?: number
+          name?: string
+          price_per_liter?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      inventory_items: {
+        Row: {
+          category: string
+          created_at: string | null
+          current_stock: number
+          id: string
+          min_threshold: number
+          name: string
+          supplier: string | null
+          unit_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          current_stock?: number
+          id?: string
+          min_threshold?: number
+          name: string
+          supplier?: string | null
+          unit_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          current_stock?: number
+          id?: string
+          min_threshold?: number
+          name?: string
+          supplier?: string | null
+          unit_price?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name: string
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          created_at: string | null
+          fuel_tank_id: string
+          id: string
+          payment_method: string
+          price_per_liter: number
+          quantity: number
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          fuel_tank_id: string
+          id?: string
+          payment_method?: string
+          price_per_liter: number
+          quantity: number
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          fuel_tank_id?: string
+          id?: string
+          payment_method?: string
+          price_per_liter?: number
+          quantity?: number
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_fuel_tank_id_fkey"
+            columns: ["fuel_tank_id"]
+            isOneToOne: false
+            referencedRelation: "fuel_tanks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
+      is_manager_or_higher: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      fuel_type: "essence_95" | "essence_98" | "diesel" | "gasoil"
+      user_role: "gerant" | "responsable" | "caissier" | "pompiste"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +293,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      fuel_type: ["essence_95", "essence_98", "diesel", "gasoil"],
+      user_role: ["gerant", "responsable", "caissier", "pompiste"],
+    },
   },
 } as const

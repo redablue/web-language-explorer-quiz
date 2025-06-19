@@ -1,12 +1,53 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Fuel, TrendingUp, Users, AlertTriangle, DollarSign, BarChart3 } from "lucide-react";
+import { useFuelTanks } from "@/hooks/useFuelTanks";
+import { useSales } from "@/hooks/useSales";
+import { useAuth } from "@/hooks/useAuth";
+import { useMemo } from "react";
 
 const Dashboard = () => {
+  const { profile } = useAuth();
+  const { data: fuelTanks = [] } = useFuelTanks();
+  const { data: sales = [] } = useSales({
+    from: new Date().toISOString().split('T')[0] + 'T00:00:00.000Z',
+    to: new Date().toISOString().split('T')[0] + 'T23:59:59.999Z'
+  });
+
+  const dashboardStats = useMemo(() => {
+    const todaysSales = sales.reduce((sum, sale) => sum + sale.total_amount, 0);
+    const todaysLiters = sales.reduce((sum, sale) => sum + sale.quantity, 0);
+    const lowStockTanks = fuelTanks.filter(tank => tank.current_level <= tank.min_threshold);
+    
+    return {
+      todaysSales,
+      todaysLiters,
+      lowStockCount: lowStockTanks.length,
+      totalTanks: fuelTanks.length
+    };
+  }, [sales, fuelTanks]);
+
+  const getFuelTypeLabel = (fuelType: string) => {
+    switch (fuelType) {
+      case 'essence_95': return 'Essence 95';
+      case 'essence_98': return 'Essence 98';
+      case 'diesel': return 'Diesel';
+      case 'gasoil': return 'Gasoil';
+      default: return fuelType;
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Tableau de Bord - Station de Service</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Tableau de Bord - Station de Service</h1>
+          {profile && (
+            <p className="text-muted-foreground mt-1">
+              Bienvenue, {profile.full_name} ({profile.role})
+            </p>
+          )}
+        </div>
         <div className="text-sm text-muted-foreground">
           {new Date().toLocaleDateString('fr-MA')}
         </div>
@@ -20,9 +61,9 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">45,230 MAD</div>
+            <div className="text-2xl font-bold">{dashboardStats.todaysSales.toFixed(2)} MAD</div>
             <p className="text-xs text-muted-foreground">
-              +12% par rapport à hier
+              {sales.length} transaction{sales.length > 1 ? 's' : ''}
             </p>
           </CardContent>
         </Card>
@@ -33,22 +74,22 @@ const Dashboard = () => {
             <Fuel className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3,245 L</div>
+            <div className="text-2xl font-bold">{dashboardStats.todaysLiters.toFixed(1)} L</div>
             <p className="text-xs text-muted-foreground">
-              +8% par rapport à hier
+              Volume total aujourd'hui
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Employés Présents</CardTitle>
+            <CardTitle className="text-sm font-medium">Cuves Actives</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12/15</div>
+            <div className="text-2xl font-bold">{dashboardStats.totalTanks}</div>
             <p className="text-xs text-muted-foreground">
-              80% de présence
+              Cuves en service
             </p>
           </CardContent>
         </Card>
@@ -56,10 +97,12 @@ const Dashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Alertes Stock</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <AlertTriangle className={`h-4 w-4 ${dashboardStats.lowStockCount > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-500">3</div>
+            <div className={`text-2xl font-bold ${dashboardStats.lowStockCount > 0 ? 'text-orange-500' : ''}`}>
+              {dashboardStats.lowStockCount}
+            </div>
             <p className="text-xs text-muted-foreground">
               Cuves à réapprovisionner
             </p>
@@ -76,29 +119,31 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Gasoil</span>
-                <span className="font-medium">15,230 MAD (45%)</span>
-              </div>
-              <div className="w-full bg-secondary h-2 rounded-full">
-                <div className="bg-primary h-2 rounded-full w-[45%]"></div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Super</span>
-                <span className="font-medium">20,150 MAD (35%)</span>
-              </div>
-              <div className="w-full bg-secondary h-2 rounded-full">
-                <div className="bg-blue-500 h-2 rounded-full w-[35%]"></div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Premium</span>
-                <span className="font-medium">9,850 MAD (20%)</span>
-              </div>
-              <div className="w-full bg-secondary h-2 rounded-full">
-                <div className="bg-green-500 h-2 rounded-full w-[20%]"></div>
-              </div>
+              {fuelTanks.slice(0, 3).map((tank, index) => {
+                const tankSales = sales
+                  .filter(sale => sale.fuel_tank_id === tank.id)
+                  .reduce((sum, sale) => sum + sale.total_amount, 0);
+                const percentage = dashboardStats.todaysSales > 0 
+                  ? (tankSales / dashboardStats.todaysSales) * 100 
+                  : 0;
+                
+                const colors = ['bg-primary', 'bg-blue-500', 'bg-green-500'];
+                
+                return (
+                  <div key={tank.id}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">{getFuelTypeLabel(tank.fuel_type)}</span>
+                      <span className="font-medium">{tankSales.toFixed(2)} MAD ({percentage.toFixed(0)}%)</span>
+                    </div>
+                    <div className="w-full bg-secondary h-2 rounded-full">
+                      <div 
+                        className={`${colors[index]} h-2 rounded-full transition-all duration-500`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -110,35 +155,30 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">Cuve 1 - Gasoil</span>
-                  <span className="text-sm font-medium">8,500L / 10,000L</span>
-                </div>
-                <div className="w-full bg-secondary h-2 rounded-full">
-                  <div className="bg-green-500 h-2 rounded-full w-[85%]"></div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">Cuve 2 - Super</span>
-                  <span className="text-sm font-medium text-orange-500">2,100L / 8,000L</span>
-                </div>
-                <div className="w-full bg-secondary h-2 rounded-full">
-                  <div className="bg-orange-500 h-2 rounded-full w-[26%]"></div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">Cuve 3 - Premium</span>
-                  <span className="text-sm font-medium">4,200L / 6,000L</span>
-                </div>
-                <div className="w-full bg-secondary h-2 rounded-full">
-                  <div className="bg-blue-500 h-2 rounded-full w-[70%]"></div>
-                </div>
-              </div>
+              {fuelTanks.slice(0, 3).map((tank) => {
+                const percentage = (tank.current_level / tank.capacity) * 100;
+                const isLow = tank.current_level <= tank.min_threshold;
+                
+                return (
+                  <div key={tank.id} className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">{tank.name}</span>
+                      <span className={`text-sm font-medium ${isLow ? 'text-orange-500' : ''}`}>
+                        {tank.current_level.toLocaleString()}L / {tank.capacity.toLocaleString()}L
+                      </span>
+                    </div>
+                    <div className="w-full bg-secondary h-2 rounded-full">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-500 ${
+                          percentage > 50 ? 'bg-green-500' : 
+                          percentage > 25 ? 'bg-orange-500' : 'bg-red-500'
+                        }`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
