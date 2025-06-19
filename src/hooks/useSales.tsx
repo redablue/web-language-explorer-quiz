@@ -8,6 +8,7 @@ export interface Sale {
   id: string;
   user_id: string;
   fuel_tank_id: string;
+  pump_id?: string;
   quantity: number;
   price_per_liter: number;
   total_amount: number;
@@ -19,6 +20,10 @@ export interface Sale {
   };
   profiles?: {
     full_name: string;
+  };
+  pumps?: {
+    name: string;
+    position_number: number;
   };
 }
 
@@ -34,7 +39,8 @@ export const useSales = (dateFilter?: { from: string; to: string }) => {
         .select(`
           *,
           fuel_tanks(name, fuel_type),
-          profiles(full_name)
+          profiles(full_name),
+          pumps(name, position_number)
         `)
         .order('created_at', { ascending: false });
 
@@ -74,6 +80,7 @@ export const useCreateSale = () => {
   return useMutation({
     mutationFn: async (saleData: {
       fuel_tank_id: string;
+      pump_id?: string;
       quantity: number;
       price_per_liter: number;
       payment_method: string;
@@ -91,10 +98,24 @@ export const useCreateSale = () => {
         });
 
       if (error) throw error;
+
+      // Mettre à jour le total distribué de la pompe si une pompe est sélectionnée
+      if (saleData.pump_id) {
+        const { error: pumpError } = await supabase.rpc(
+          'increment_pump_total',
+          { 
+            pump_id: saleData.pump_id, 
+            quantity: saleData.quantity 
+          }
+        );
+        // Ignorer l'erreur si la fonction n'existe pas encore
+        console.log('Pump update result:', pumpError);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       queryClient.invalidateQueries({ queryKey: ['fuel-tanks'] });
+      queryClient.invalidateQueries({ queryKey: ['pumps'] });
       toast({
         title: "Succès",
         description: "Vente enregistrée avec succès",

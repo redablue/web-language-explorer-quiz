@@ -1,61 +1,40 @@
 
-import { useState } from "react";
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Dashboard from "./Dashboard";
 import FuelManagement from "./FuelManagement";
+import PumpManagement from "./PumpManagement";
+import PointOfSale from "./PointOfSale";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "dashboard":
-        return <Dashboard />;
-      case "fuel":
-        return <FuelManagement />;
-      case "sales":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Point de Vente</h1><p>Module en développement...</p></div>;
-      case "employees":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Gestion des Employés</h1><p>Module en développement...</p></div>;
-      case "finance":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Finances</h1><p>Module en développement...</p></div>;
-      case "compliance":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Conformité Réglementaire</h1><p>Module en développement...</p></div>;
-      case "maintenance":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Maintenance</h1><p>Module en développement...</p></div>;
-      case "customers":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Gestion Clientèle</h1><p>Module en développement...</p></div>;
-      case "services":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Services Auto</h1><p>Module en développement...</p></div>;
-      case "shop":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Boutique</h1><p>Module en développement...</p></div>;
-      case "analytics":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Analytics Avancés</h1><p>Module en développement...</p></div>;
-      case "settings":
-        return <div className="p-6"><h1 className="text-3xl font-bold">Paramètres</h1><p>Module en développement...</p></div>;
-      default:
-        return <Dashboard />;
-    }
-  };
+  const { hasRole } = useAuth();
 
   return (
-    <div className="flex h-screen bg-background">
-      {sidebarOpen && (
-        <Sidebar 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-        />
-      )}
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+    <div className="min-h-screen bg-background">
+      <Tabs defaultValue="dashboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+          <TabsTrigger value="dashboard">Tableau de Bord</TabsTrigger>
+          <TabsTrigger value="pos">Point de Vente</TabsTrigger>
+          <TabsTrigger value="fuel">Gestion Carburant</TabsTrigger>
+          <TabsTrigger value="pumps">Pompes</TabsTrigger>
+        </TabsList>
         
-        <main className="flex-1 overflow-y-auto">
-          {renderContent()}
-        </main>
-      </div>
+        <TabsContent value="dashboard" className="mt-0">
+          <Dashboard />
+        </TabsContent>
+        
+        <TabsContent value="pos" className="mt-0">
+          <PointOfSale />
+        </TabsContent>
+        
+        <TabsContent value="fuel" className="mt-0">
+          <FuelManagement />
+        </TabsContent>
+        
+        <TabsContent value="pumps" className="mt-0">
+          <PumpManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Fuel, TrendingUp, Users, AlertTriangle, DollarSign, BarChart3 } from "lucide-react";
+import { Fuel, TrendingUp, Users, AlertTriangle, DollarSign, BarChart3, Power } from "lucide-react";
 import { useFuelTanks } from "@/hooks/useFuelTanks";
+import { usePumps } from "@/hooks/usePumps";
 import { useSales } from "@/hooks/useSales";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo } from "react";
@@ -9,6 +10,7 @@ import { useMemo } from "react";
 const Dashboard = () => {
   const { profile } = useAuth();
   const { data: fuelTanks = [] } = useFuelTanks();
+  const { data: pumps = [] } = usePumps();
   const { data: sales = [] } = useSales({
     from: new Date().toISOString().split('T')[0] + 'T00:00:00.000Z',
     to: new Date().toISOString().split('T')[0] + 'T23:59:59.999Z'
@@ -18,14 +20,17 @@ const Dashboard = () => {
     const todaysSales = sales.reduce((sum, sale) => sum + sale.total_amount, 0);
     const todaysLiters = sales.reduce((sum, sale) => sum + sale.quantity, 0);
     const lowStockTanks = fuelTanks.filter(tank => tank.current_level <= tank.min_threshold);
+    const activePumps = pumps.filter(pump => pump.status === 'active');
     
     return {
       todaysSales,
       todaysLiters,
       lowStockCount: lowStockTanks.length,
-      totalTanks: fuelTanks.length
+      totalTanks: fuelTanks.length,
+      activePumps: activePumps.length,
+      totalPumps: pumps.length
     };
-  }, [sales, fuelTanks]);
+  }, [sales, fuelTanks, pumps]);
 
   const getFuelTypeLabel = (fuelType: string) => {
     switch (fuelType) {
@@ -54,7 +59,7 @@ const Dashboard = () => {
       </div>
 
       {/* KPIs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ventes Aujourd'hui</CardTitle>
@@ -77,6 +82,19 @@ const Dashboard = () => {
             <div className="text-2xl font-bold">{dashboardStats.todaysLiters.toFixed(1)} L</div>
             <p className="text-xs text-muted-foreground">
               Volume total aujourd'hui
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pompes Actives</CardTitle>
+            <Power className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats.activePumps}/{dashboardStats.totalPumps}</div>
+            <p className="text-xs text-muted-foreground">
+              Pompes en service
             </p>
           </CardContent>
         </Card>
@@ -201,8 +219,8 @@ const Dashboard = () => {
               <span className="text-sm">Rapport Journalier</span>
             </button>
             <button className="p-4 border rounded-lg hover:bg-accent transition-colors text-center">
-              <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <span className="text-sm">Gestion Équipe</span>
+              <Power className="h-6 w-6 mx-auto mb-2 text-primary" />
+              <span className="text-sm">Gestion Pompes</span>
             </button>
             <button className="p-4 border rounded-lg hover:bg-accent transition-colors text-center">
               <BarChart3 className="h-6 w-6 mx-auto mb-2 text-primary" />

@@ -111,6 +111,50 @@ export type Database = {
         }
         Relationships: []
       }
+      pumps: {
+        Row: {
+          created_at: string | null
+          fuel_tank_id: string
+          id: string
+          last_maintenance: string | null
+          name: string
+          position_number: number
+          status: string
+          total_dispensed: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          fuel_tank_id: string
+          id?: string
+          last_maintenance?: string | null
+          name: string
+          position_number: number
+          status?: string
+          total_dispensed?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          fuel_tank_id?: string
+          id?: string
+          last_maintenance?: string | null
+          name?: string
+          position_number?: number
+          status?: string
+          total_dispensed?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pumps_fuel_tank_id_fkey"
+            columns: ["fuel_tank_id"]
+            isOneToOne: false
+            referencedRelation: "fuel_tanks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           created_at: string | null
@@ -118,6 +162,7 @@ export type Database = {
           id: string
           payment_method: string
           price_per_liter: number
+          pump_id: string | null
           quantity: number
           total_amount: number
           user_id: string
@@ -128,6 +173,7 @@ export type Database = {
           id?: string
           payment_method?: string
           price_per_liter: number
+          pump_id?: string | null
           quantity: number
           total_amount: number
           user_id: string
@@ -138,6 +184,7 @@ export type Database = {
           id?: string
           payment_method?: string
           price_per_liter?: number
+          pump_id?: string | null
           quantity?: number
           total_amount?: number
           user_id?: string
@@ -148,6 +195,13 @@ export type Database = {
             columns: ["fuel_tank_id"]
             isOneToOne: false
             referencedRelation: "fuel_tanks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_pump_id_fkey"
+            columns: ["pump_id"]
+            isOneToOne: false
+            referencedRelation: "pumps"
             referencedColumns: ["id"]
           },
           {
