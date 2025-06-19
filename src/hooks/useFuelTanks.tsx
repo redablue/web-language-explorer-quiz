@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 export interface FuelTank {
   id: string;
   name: string;
-  fuel_type: 'essence_95' | 'essence_98' | 'diesel' | 'gasoil';
+  fuel_type: 'gasoil' | 'essence' | 'melange';
   capacity: number;
   current_level: number;
   min_threshold: number;

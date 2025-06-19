@@ -231,7 +231,7 @@ export type Database = {
       }
     }
     Enums: {
-      fuel_type: "essence_95" | "essence_98" | "diesel" | "gasoil"
+      fuel_type: "gasoil" | "essence" | "melange"
       user_role: "gerant" | "responsable" | "caissier" | "pompiste"
     }
     CompositeTypes: {
@@ -348,7 +348,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      fuel_type: ["essence_95", "essence_98", "diesel", "gasoil"],
+      fuel_type: ["gasoil", "essence", "melange"],
       user_role: ["gerant", "responsable", "caissier", "pompiste"],
     },
   },

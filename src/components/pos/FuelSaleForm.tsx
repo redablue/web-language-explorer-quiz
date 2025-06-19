@@ -33,10 +33,9 @@ const FuelSaleForm = () => {
 
   const getFuelTypeLabel = (fuelType: string) => {
     switch (fuelType) {
-      case 'essence_95': return 'Essence 95';
-      case 'essence_98': return 'Essence 98';
-      case 'diesel': return 'Diesel';
       case 'gasoil': return 'Gasoil';
+      case 'essence': return 'Essence';
+      case 'melange': return 'Mélange';
       default: return fuelType;
     }
   };
