@@ -12,6 +12,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
   console.log('ProtectedRoute - User:', !!user, 'Profile:', !!profile, 'Loading:', loading);
 
+  // Afficher un écran de chargement pendant l'initialisation
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -23,26 +24,13 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  // If no user, redirect to auth
+  // Si pas d'utilisateur connecté, rediriger vers la page d'authentification
   if (!user) {
     console.log('No user, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 
-  // If user exists but no profile, show a different loading message
-  if (user && !profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Configuration du profil...</p>
-          <p className="text-sm text-muted-foreground mt-2">Cela peut prendre quelques secondes</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Check role permissions if required
+  // Vérifier les permissions de rôle si requis
   if (requiredRole && profile) {
     const hasPermission = Array.isArray(requiredRole)
       ? requiredRole.includes(profile.role)
@@ -58,6 +46,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
         </div>
       );
     }
+  }
+
+  // Si l'utilisateur est connecté mais pas de profil chargé, afficher l'application quand même
+  // avec un message d'avertissement dans la console
+  if (user && !profile) {
+    console.warn('User authenticated but no profile loaded');
   }
 
   return <>{children}</>;
