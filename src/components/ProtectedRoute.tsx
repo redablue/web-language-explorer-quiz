@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'gerant' | 'responsable' | 'caissier' | 'pompiste' | Array<'gerant' | 'responsable' | 'caissier' | 'pompiste'>;
+  requiredRole?: 'admin' | 'employee' | Array<'admin' | 'employee'>;
 }
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
@@ -33,7 +33,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   // Vérifier les permissions de rôle si requis
   if (requiredRole && profile) {
     const hasPermission = Array.isArray(requiredRole)
-      ? requiredRole.includes(profile.role)
+      ? requiredRole.includes(profile.role as any)
       : profile.role === requiredRole;
 
     if (!hasPermission) {

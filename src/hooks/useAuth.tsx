@@ -4,7 +4,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export type UserRole = 'gerant' | 'responsable' | 'caissier' | 'pompiste' | 'superadmin';
+// Mapper les types Supabase aux types de l'application
+export type UserRole = 'superadmin' | 'admin' | 'employee' | 'trainee';
 
 export interface UserProfile {
   id: string;
@@ -74,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           id: userId,
           email: email,
           full_name: 'Nouvel Utilisateur',
-          role: 'pompiste'
+          role: 'trainee'
         })
         .select()
         .single();
@@ -298,7 +299,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const isManagerOrHigher = () => {
-    return hasRole(['gerant', 'responsable', 'superadmin']);
+    return hasRole(['superadmin', 'admin']);
   };
 
   const isSuperAdmin = () => {

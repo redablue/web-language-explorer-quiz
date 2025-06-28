@@ -22,10 +22,9 @@ const UserProfile = () => {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'superadmin': return 'destructive';
-      case 'gerant': return 'default';
-      case 'responsable': return 'secondary';
-      case 'caissier': return 'outline';
-      case 'pompiste': return 'outline';
+      case 'admin': return 'default';
+      case 'employee': return 'secondary';
+      case 'trainee': return 'outline';
       default: return 'outline';
     }
   };
@@ -33,10 +32,9 @@ const UserProfile = () => {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'superadmin': return 'Super Admin';
-      case 'gerant': return 'Gérant';
-      case 'responsable': return 'Responsable';
-      case 'caissier': return 'Caissier';
-      case 'pompiste': return 'Pompiste';
+      case 'admin': return 'Administrateur';
+      case 'employee': return 'Employé';
+      case 'trainee': return 'Stagiaire';
       default: return role;
     }
   };

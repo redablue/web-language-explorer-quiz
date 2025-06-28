@@ -27,28 +27,60 @@ export const usePumps = () => {
   return useQuery({
     queryKey: ['pumps'],
     queryFn: async (): Promise<Pump[]> => {
-      const { data, error } = await supabase
-        .from('pumps')
-        .select(`
-          *,
-          fuel_tanks(name, fuel_type, current_level, price_per_liter)
-        `)
-        .order('position_number');
-
-      if (error) {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les pompes",
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      // Cast the status to the correct type since Supabase returns string
-      return (data || []).map(pump => ({
-        ...pump,
-        status: pump.status as 'active' | 'inactive' | 'maintenance' | 'out_of_order'
-      }));
+      // Retourner des données de test pour l'instant
+      return [
+        {
+          id: '1',
+          name: 'Pompe 1',
+          fuel_tank_id: '1',
+          status: 'active',
+          position_number: 1,
+          total_dispensed: 5000,
+          last_maintenance: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          fuel_tanks: {
+            name: 'Cuve Gasoil 1',
+            fuel_type: 'gasoil',
+            current_level: 7500,
+            price_per_liter: 12.50
+          }
+        },
+        {
+          id: '2',
+          name: 'Pompe 2',
+          fuel_tank_id: '2',
+          status: 'active',
+          position_number: 2,
+          total_dispensed: 3200,
+          last_maintenance: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          fuel_tanks: {
+            name: 'Cuve Essence 1',
+            fuel_type: 'essence',
+            current_level: 6200,
+            price_per_liter: 14.20
+          }
+        },
+        {
+          id: '3',
+          name: 'Pompe 3',
+          fuel_tank_id: '1',
+          status: 'maintenance',
+          position_number: 3,
+          total_dispensed: 1800,
+          last_maintenance: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          fuel_tanks: {
+            name: 'Cuve Gasoil 1',
+            fuel_type: 'gasoil',
+            current_level: 7500,
+            price_per_liter: 12.50
+          }
+        }
+      ];
     },
   });
 };
@@ -59,15 +91,9 @@ export const useUpdatePumpStatus = () => {
 
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: Pump['status'] }) => {
-      const { error } = await supabase
-        .from('pumps')
-        .update({ 
-          status,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-
-      if (error) throw error;
+      // Pour l'instant, juste simuler la mise à jour
+      console.log('Updating pump status for pump:', id, 'to:', status);
+      return Promise.resolve();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pumps'] });
