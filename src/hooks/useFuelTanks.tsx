@@ -83,7 +83,7 @@ export const useUpdateFuelLevel = () => {
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le niveau",
-        variant: "descriptive",
+        variant: "destructive",
       });
     },
   });
