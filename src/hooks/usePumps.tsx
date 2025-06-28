@@ -27,7 +27,8 @@ export const usePumps = () => {
   return useQuery({
     queryKey: ['pumps'],
     queryFn: async (): Promise<Pump[]> => {
-      // Retourner des données de test pour l'instant
+      // Utiliser des données de test en attendant que les types Supabase soient mis à jour
+      console.log('Using test data for pumps - database tables not yet in Supabase types');
       return [
         {
           id: '1',
