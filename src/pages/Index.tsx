@@ -1,5 +1,7 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import Dashboard from "./Dashboard";
 import FuelManagement from "./FuelManagement";
 import PumpManagement from "./PumpManagement";
@@ -8,34 +10,41 @@ import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const { hasRole } = useAuth();
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return <Dashboard />;
+      case "pos":
+      case "sales":
+        return <PointOfSale />;
+      case "fuel":
+        return <FuelManagement />;
+      case "pumps":
+        return <PumpManagement />;
+      default:
+        return <Dashboard />;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="dashboard">Tableau de Bord</TabsTrigger>
-          <TabsTrigger value="pos">Point de Vente</TabsTrigger>
-          <TabsTrigger value="fuel">Gestion Carburant</TabsTrigger>
-          <TabsTrigger value="pumps">Pompes</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="dashboard" className="mt-0">
-          <Dashboard />
-        </TabsContent>
-        
-        <TabsContent value="pos" className="mt-0">
-          <PointOfSale />
-        </TabsContent>
-        
-        <TabsContent value="fuel" className="mt-0">
-          <FuelManagement />
-        </TabsContent>
-        
-        <TabsContent value="pumps" className="mt-0">
-          <PumpManagement />
-        </TabsContent>
-      </Tabs>
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold">Station Manager</h1>
+            </div>
+          </header>
+          <main className="flex-1 p-6">
+            {renderContent()}
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
