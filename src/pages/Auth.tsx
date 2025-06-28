@@ -8,10 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { Fuel, Shield, Users, TrendingUp } from "lucide-react";
+import SuperAdminLogin from "@/components/SuperAdminLogin";
 
 const Auth = () => {
   const { user, signIn, signUp, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuperAdmin, setShowSuperAdmin] = useState(false);
 
   // Redirect if already authenticated
   if (user) {
@@ -53,6 +55,25 @@ const Auth = () => {
     await signUp(email, password, fullName);
     setIsLoading(false);
   };
+
+  if (showSuperAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="mb-4 text-center">
+            <Button 
+              variant="ghost" 
+              onClick={() => setShowSuperAdmin(false)}
+              className="text-gray-600"
+            >
+              ← Retour à la connexion normale
+            </Button>
+          </div>
+          <SuperAdminLogin />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -146,6 +167,16 @@ const Auth = () => {
                       {isLoading ? "Connexion..." : "Se connecter"}
                     </Button>
                   </form>
+                  
+                  <div className="text-center mt-4">
+                    <Button 
+                      variant="link" 
+                      onClick={() => setShowSuperAdmin(true)}
+                      className="text-xs text-gray-500 hover:text-red-600"
+                    >
+                      Accès Superadmin
+                    </Button>
+                  </div>
                 </TabsContent>
                 
                 <TabsContent value="signup" className="space-y-4">

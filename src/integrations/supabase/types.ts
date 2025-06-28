@@ -9,77 +9,88 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      fuel_tanks: {
+      clients: {
         Row: {
-          capacity: number
-          created_at: string | null
-          current_level: number
-          fuel_type: Database["public"]["Enums"]["fuel_type"]
+          adresse: string | null
+          code_postal: string | null
+          created_at: string
+          created_by: string | null
+          date_creation: string
+          email: string | null
+          ice: string | null
           id: string
-          min_threshold: number
-          name: string
-          price_per_liter: number
-          updated_at: string | null
+          identifiant_damancom: string | null
+          identifiant_dgi: string | null
+          identifiant_fiscal: string | null
+          mot_de_passe_damancom: string | null
+          mot_de_passe_dgi: string | null
+          nom_commercial: string
+          notes: string | null
+          numero_rc: string | null
+          raison_sociale: string | null
+          statut: Database["public"]["Enums"]["client_status"]
+          telephone: string | null
+          type_client: Database["public"]["Enums"]["client_type"]
+          updated_at: string
+          ville: string | null
         }
         Insert: {
-          capacity: number
-          created_at?: string | null
-          current_level?: number
-          fuel_type: Database["public"]["Enums"]["fuel_type"]
+          adresse?: string | null
+          code_postal?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_creation?: string
+          email?: string | null
+          ice?: string | null
           id?: string
-          min_threshold?: number
-          name: string
-          price_per_liter: number
-          updated_at?: string | null
+          identifiant_damancom?: string | null
+          identifiant_dgi?: string | null
+          identifiant_fiscal?: string | null
+          mot_de_passe_damancom?: string | null
+          mot_de_passe_dgi?: string | null
+          nom_commercial: string
+          notes?: string | null
+          numero_rc?: string | null
+          raison_sociale?: string | null
+          statut?: Database["public"]["Enums"]["client_status"]
+          telephone?: string | null
+          type_client?: Database["public"]["Enums"]["client_type"]
+          updated_at?: string
+          ville?: string | null
         }
         Update: {
-          capacity?: number
-          created_at?: string | null
-          current_level?: number
-          fuel_type?: Database["public"]["Enums"]["fuel_type"]
+          adresse?: string | null
+          code_postal?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_creation?: string
+          email?: string | null
+          ice?: string | null
           id?: string
-          min_threshold?: number
-          name?: string
-          price_per_liter?: number
-          updated_at?: string | null
+          identifiant_damancom?: string | null
+          identifiant_dgi?: string | null
+          identifiant_fiscal?: string | null
+          mot_de_passe_damancom?: string | null
+          mot_de_passe_dgi?: string | null
+          nom_commercial?: string
+          notes?: string | null
+          numero_rc?: string | null
+          raison_sociale?: string | null
+          statut?: Database["public"]["Enums"]["client_status"]
+          telephone?: string | null
+          type_client?: Database["public"]["Enums"]["client_type"]
+          updated_at?: string
+          ville?: string | null
         }
-        Relationships: []
-      }
-      inventory_items: {
-        Row: {
-          category: string
-          created_at: string | null
-          current_stock: number
-          id: string
-          min_threshold: number
-          name: string
-          supplier: string | null
-          unit_price: number
-          updated_at: string | null
-        }
-        Insert: {
-          category: string
-          created_at?: string | null
-          current_stock?: number
-          id?: string
-          min_threshold?: number
-          name: string
-          supplier?: string | null
-          unit_price: number
-          updated_at?: string | null
-        }
-        Update: {
-          category?: string
-          created_at?: string | null
-          current_stock?: number
-          id?: string
-          min_threshold?: number
-          name?: string
-          supplier?: string | null
-          unit_price?: number
-          updated_at?: string | null
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clients_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -111,119 +122,22 @@ export type Database = {
         }
         Relationships: []
       }
-      pumps: {
-        Row: {
-          created_at: string | null
-          fuel_tank_id: string
-          id: string
-          last_maintenance: string | null
-          name: string
-          position_number: number
-          status: string
-          total_dispensed: number
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          fuel_tank_id: string
-          id?: string
-          last_maintenance?: string | null
-          name: string
-          position_number: number
-          status?: string
-          total_dispensed?: number
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          fuel_tank_id?: string
-          id?: string
-          last_maintenance?: string | null
-          name?: string
-          position_number?: number
-          status?: string
-          total_dispensed?: number
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pumps_fuel_tank_id_fkey"
-            columns: ["fuel_tank_id"]
-            isOneToOne: false
-            referencedRelation: "fuel_tanks"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      sales: {
-        Row: {
-          created_at: string | null
-          fuel_tank_id: string
-          id: string
-          payment_method: string
-          price_per_liter: number
-          pump_id: string | null
-          quantity: number
-          total_amount: number
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          fuel_tank_id: string
-          id?: string
-          payment_method?: string
-          price_per_liter: number
-          pump_id?: string | null
-          quantity: number
-          total_amount: number
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          fuel_tank_id?: string
-          id?: string
-          payment_method?: string
-          price_per_liter?: number
-          pump_id?: string | null
-          quantity?: number
-          total_amount?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sales_fuel_tank_id_fkey"
-            columns: ["fuel_tank_id"]
-            isOneToOne: false
-            referencedRelation: "fuel_tanks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sales_pump_id_fkey"
-            columns: ["pump_id"]
-            isOneToOne: false
-            referencedRelation: "pumps"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sales_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
+      create_authorized_user: {
+        Args: { user_email: string; user_role: string; user_full_name: string }
+        Returns: Json
+      }
+      create_superadmin_user: {
         Args: {
-          _user_id: string
-          _role: Database["public"]["Enums"]["user_role"]
+          admin_email: string
+          admin_password: string
+          admin_full_name: string
         }
-        Returns: boolean
+        Returns: Json
       }
       is_manager_or_higher: {
         Args: Record<PropertyKey, never> | { _user_id: string }
@@ -231,8 +145,14 @@ export type Database = {
       }
     }
     Enums: {
-      fuel_type: "gasoil" | "essence" | "melange"
-      user_role: "gerant" | "responsable" | "caissier" | "pompiste"
+      client_status: "Actif" | "Inactif" | "Suspendu"
+      client_type:
+        | "SARL"
+        | "SA"
+        | "Auto-entrepreneur"
+        | "Particulier"
+        | "Association"
+      user_role: "superadmin" | "admin" | "employee" | "trainee"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -348,8 +268,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      fuel_type: ["gasoil", "essence", "melange"],
-      user_role: ["gerant", "responsable", "caissier", "pompiste"],
+      client_status: ["Actif", "Inactif", "Suspendu"],
+      client_type: [
+        "SARL",
+        "SA",
+        "Auto-entrepreneur",
+        "Particulier",
+        "Association",
+      ],
+      user_role: ["superadmin", "admin", "employee", "trainee"],
     },
   },
 } as const

@@ -1,9 +1,10 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export type UserRole = 'gerant' | 'responsable' | 'caissier' | 'pompiste';
+export type UserRole = 'gerant' | 'responsable' | 'caissier' | 'pompiste' | 'superadmin';
 
 export interface UserProfile {
   id: string;
@@ -23,6 +24,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   hasRole: (role: UserRole | UserRole[]) => boolean;
   isManagerOrHigher: () => boolean;
+  isSuperAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +35,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  // Vérifier la session superadmin
+  const checkSuperAdminSession = () => {
+    const superAdminSession = localStorage.getItem('superadmin_session');
+    if (superAdminSession) {
+      try {
+        const sessionData = JSON.parse(superAdminSession);
+        if (sessionData.expires_at > Date.now()) {
+          setProfile({
+            id: sessionData.user.id,
+            email: sessionData.user.email,
+            full_name: 'Super Administrateur',
+            role: 'superadmin'
+          });
+          setUser({
+            id: sessionData.user.id,
+            email: sessionData.user.email,
+          } as User);
+          setLoading(false);
+          return true;
+        } else {
+          localStorage.removeItem('superadmin_session');
+        }
+      } catch (error) {
+        localStorage.removeItem('superadmin_session');
+      }
+    }
+    return false;
+  };
 
   const createMissingProfile = async (userId: string, email: string) => {
     try {
@@ -65,7 +96,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('Fetching profile for user:', userId);
       
-      // Première tentative : récupérer le profil existant
       const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
@@ -82,7 +112,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return existingProfile;
       }
 
-      // Si aucun profil trouvé, tenter de le créer
       console.log('No profile found, attempting to create one...');
       return await createMissingProfile(userId, email);
       
@@ -99,7 +128,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         console.log('Initializing auth...');
         
-        // Obtenir la session initiale
+        // Vérifier d'abord la session superadmin
+        if (checkSuperAdminSession()) {
+          return;
+        }
+        
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -142,12 +175,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Configurer l'écouteur d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state changed:', event, !!session?.user);
+        
+        // Ignorer les changements d'état si on est en mode superadmin
+        if (localStorage.getItem('superadmin_session')) {
+          return;
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -166,7 +203,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setProfile(null);
         }
         
-        // S'assurer que le loading est désactivé après les changements d'état
         if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') {
           setLoading(false);
         }
@@ -240,6 +276,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
+    // Supprimer la session superadmin si elle existe
+    localStorage.removeItem('superadmin_session');
+    
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
@@ -259,7 +298,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const isManagerOrHigher = () => {
-    return hasRole(['gerant', 'responsable']);
+    return hasRole(['gerant', 'responsable', 'superadmin']);
+  };
+
+  const isSuperAdmin = () => {
+    return hasRole('superadmin');
   };
 
   const value = {
@@ -272,6 +315,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
     hasRole,
     isManagerOrHigher,
+    isSuperAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

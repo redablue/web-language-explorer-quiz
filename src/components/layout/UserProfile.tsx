@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, User, Settings } from "lucide-react";
+import { LogOut, User, Settings, Crown } from "lucide-react";
 
 const UserProfile = () => {
   const { profile, signOut } = useAuth();
@@ -21,16 +21,18 @@ const UserProfile = () => {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
+      case 'superadmin': return 'destructive';
       case 'gerant': return 'default';
       case 'responsable': return 'secondary';
       case 'caissier': return 'outline';
-      case 'pompiste': return 'destructive';
+      case 'pompiste': return 'outline';
       default: return 'outline';
     }
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
+      case 'superadmin': return 'Super Admin';
       case 'gerant': return 'Gérant';
       case 'responsable': return 'Responsable';
       case 'caissier': return 'Caissier';
@@ -44,8 +46,8 @@ const UserProfile = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {profile.full_name.charAt(0).toUpperCase()}
+            <AvatarFallback className={`${profile.role === 'superadmin' ? 'bg-red-600' : 'bg-primary'} text-primary-foreground`}>
+              {profile.role === 'superadmin' ? <Crown className="h-5 w-5" /> : profile.full_name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -58,6 +60,7 @@ const UserProfile = () => {
               {profile.email}
             </p>
             <Badge variant={getRoleBadgeVariant(profile.role)} className="w-fit">
+              {profile.role === 'superadmin' && <Crown className="mr-1 h-3 w-3" />}
               {getRoleLabel(profile.role)}
             </Badge>
           </div>
