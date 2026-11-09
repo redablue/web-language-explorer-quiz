@@ -6,8 +6,10 @@ import Dashboard from "./Dashboard";
 import FuelManagement from "./FuelManagement";
 import PumpManagement from "./PumpManagement";
 import PointOfSale from "./PointOfSale";
+import DoliProxySettings from "./DoliProxySettings";
 import { useAuth } from "@/hooks/useAuth";
 import UserProfile from "@/components/layout/UserProfile";
+import DoliProxyStatusBadge from "@/components/doliproxy/DoliProxyStatusBadge";
 
 const Index = () => {
   const { hasRole } = useAuth();
@@ -24,6 +26,8 @@ const Index = () => {
         return <FuelManagement />;
       case "pumps":
         return <PumpManagement />;
+      case "settings":
+        return <DoliProxySettings />;
       default:
         return <Dashboard />;
     }
@@ -39,7 +43,8 @@ const Index = () => {
             <div className="flex items-center gap-2 flex-1">
               <h1 className="text-xl font-semibold">Station Manager</h1>
             </div>
-            <UserProfile />
+            <DoliProxyStatusBadge onClick={() => setActiveTab("settings")} />
+            <UserProfile onOpenSettings={() => setActiveTab("settings")} />
           </header>
           <main className="flex-1 p-6">
             {renderContent()}

@@ -2,8 +2,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import FuelSaleForm from "@/components/pos/FuelSaleForm";
 import { ShoppingCart, Fuel, Receipt } from "lucide-react";
+import { useDoliProxy } from "@/hooks/useDoliProxy";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const PointOfSale = () => {
+  const { isErpConnected, session } = useDoliProxy();
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -12,6 +16,14 @@ const PointOfSale = () => {
           Système de caisse pour les ventes de carburant et articles
         </p>
       </div>
+      {isErpConnected && session?.syncSales && (
+        <Alert>
+          <AlertTitle>Synchronisation Dolibarr active</AlertTitle>
+          <AlertDescription>
+            Les ventes sont envoyées via DoliProxy {session.companyName ? `vers ${session.companyName}` : ""}.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Vente de carburant */}

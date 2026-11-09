@@ -5,10 +5,13 @@ import { useFuelTanks } from "@/hooks/useFuelTanks";
 import { usePumps } from "@/hooks/usePumps";
 import { useSales } from "@/hooks/useSales";
 import { useAuth } from "@/hooks/useAuth";
+import { useDoliProxy } from "@/hooks/useDoliProxy";
 import { useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
   const { profile } = useAuth();
+  const { isConnected, isErpConnected, session } = useDoliProxy();
   const { data: fuelTanks = [] } = useFuelTanks();
   const { data: pumps = [] } = usePumps();
   const { data: sales = [] } = useSales({
@@ -53,7 +56,14 @@ const Dashboard = () => {
             </p>
           )}
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Badge variant={isErpConnected ? "default" : isConnected ? "secondary" : "outline"}>
+            {isErpConnected
+              ? `ERP : ${session?.companyName || "Dolibarr"}`
+              : isConnected
+                ? "DoliProxy sans clé API"
+                : "DoliProxy non connecté"}
+          </Badge>
           {new Date().toLocaleDateString('fr-MA')}
         </div>
       </div>

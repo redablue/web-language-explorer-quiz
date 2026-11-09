@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useDoliProxy } from "@/hooks/useDoliProxy";
+import { createInvoice } from "@/integrations/dolibarr/client";
 
 export interface Sale {
   id: string;
@@ -68,6 +70,7 @@ export const useCreateSale = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { session, isErpConnected } = useDoliProxy();
 
   return useMutation({
     mutationFn: async (saleData: {
@@ -76,19 +79,31 @@ export const useCreateSale = () => {
       quantity: number;
       price_per_liter: number;
       payment_method: string;
+      fuel_label?: string;
     }) => {
       if (!user) throw new Error('User not authenticated');
 
       const total_amount = saleData.quantity * saleData.price_per_liter;
 
-      // Pour l'instant, juste simuler la création de vente
-      console.log('Creating sale:', {
-        ...saleData,
-        user_id: user.id,
-        total_amount,
-      });
-      
-      return Promise.resolve();
+      if (isErpConnected && session?.syncSales && session.dolApiKey && session.dolApiBase) {
+        if (!session.defaultSocId) {
+          throw new Error("Choisissez un client Dolibarr par défaut dans DoliProxy");
+        }
+        await createInvoice(session.dolApiBase, session.dolApiKey, {
+          socid: session.defaultSocId,
+          note_private: `Vente station ${saleData.payment_method} — ${new Date().toISOString()}`,
+          lines: [
+            {
+              desc: `${saleData.fuel_label || "Carburant"} ${saleData.quantity} L`,
+              subprice: saleData.price_per_liter,
+              qty: saleData.quantity,
+              tva_tx: 0,
+            },
+          ],
+        });
+      }
+
+      return { total_amount };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
@@ -99,10 +114,10 @@ export const useCreateSale = () => {
         description: "Vente enregistrée avec succès",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer la vente",
+        description: error instanceof Error ? error.message : "Impossible d'enregistrer la vente",
         variant: "destructive",
       });
     },

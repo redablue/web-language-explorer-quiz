@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, User, Settings, Crown } from "lucide-react";
 
-const UserProfile = () => {
+const UserProfile = ({ onOpenSettings }: { onOpenSettings?: () => void }) => {
   const { profile, signOut } = useAuth();
 
   if (!profile) return null;
@@ -68,9 +68,9 @@ const UserProfile = () => {
           <User className="mr-2 h-4 w-4" />
           <span>Profil</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={onOpenSettings}>
           <Settings className="mr-2 h-4 w-4" />
-          <span>Paramètres</span>
+          <span>DoliProxy</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut} className="text-red-600">
