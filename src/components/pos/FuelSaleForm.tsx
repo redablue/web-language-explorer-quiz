@@ -53,6 +53,7 @@ const FuelSaleForm = () => {
       quantity: Number(quantity),
       price_per_liter: selectedTank.price_per_liter,
       payment_method: paymentMethod,
+      fuel_label: getFuelTypeLabel(selectedTank.fuel_type),
     });
 
     // Reset form

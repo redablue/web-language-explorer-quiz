@@ -86,7 +86,7 @@ const menuItems = [
   },
   { 
     id: "settings", 
-    label: "Paramètres", 
+    label: "DoliProxy", 
     icon: Settings 
   },
 ];
@@ -166,7 +166,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
 
       <SidebarFooter>
         <div className="p-2 text-xs text-muted-foreground">
-          © 2024 Station Manager
+          Station Manager · DoliProxy
         </div>
       </SidebarFooter>
     </Sidebar>
